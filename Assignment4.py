@@ -42,30 +42,43 @@ Creates the 8x8 board display, using X for dark pieces and O for light pieces.
 """
 
 "Initialize the game board, using a multidimensional list/array."
-def initialize_board():
-    board_size = 8      # set length of board
 
-    BOARD = {}
+board_size = 8      # set length of board
 
-    "Have every space on the board switch off with Xs and Os"
-    for row in range(1, board_size + 1):
-        for column in range(1, board_size + 1):
-            if ((row + column) % 2 == 0):
-                BOARD[(row, column)] = 'X'
-            else:
-                BOARD[(row, column)] = 'O'
+BOARD = {}
 
-    return BOARD
+"Have every space on the board switch off with Xs and Os."
+"Also needs to include the board's coordinate lines."
+for row in range(board_size + 1):
+    for col in range(board_size + 1):
+        # Set board's horizontal and vertical coordinate lines."
+        if (row == 0):
+            BOARD[row, col] = col
+            BOARD[row, 0] = ' '     # replace coordinate in (0,0) with a blank space
+
+        elif (col == 0):
+            BOARD[row, col] = row
+
+        # Set board's X's and O's.
+        elif ((row + col) % 2 == 0):
+            BOARD[(row, col)] = 'X'
+
+        else:
+            BOARD[(row, col)] = 'O'
+
 
 "Print the board."
 def print_board(BOARD):
 
-    for row in range(1, len(BOARD)):
-        for column in range(1, len(BOARD)):
-            print (BOARD[(row, column)]),        # print on one line
+    for row in range(board_size + 1):
+        for col in range(board_size + 1):
+            print (BOARD[(row, col)]),        # print on one line
         print                                    # start a new row
 
-BOARD = initialize_board()
+
+
+
+
 print_board(BOARD)
 
 
