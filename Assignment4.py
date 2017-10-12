@@ -4,6 +4,8 @@
 # Implements a program to play the game of Konane (Hawaiian Checkers).
 # ---------------------------------------------------------------------------
 
+import random
+
 """
 Creates the node class to be used to represent various game states.
 """
@@ -35,36 +37,14 @@ class Node:
 
 
 
-
-
 """
 Creates the 8x8 board display, using X for dark pieces and O for light pieces.
 """
 
-"Initialize the game board, using a multidimensional list/array."
-
+"GLOBAL VARIABLES"
 board_size = 8      # set length of board
-
 BOARD = {}
 
-"Have every space on the board switch off with Xs and Os."
-"Also needs to include the board's coordinate lines."
-for row in range(board_size + 1):
-    for col in range(board_size + 1):
-        # Set board's horizontal and vertical coordinate lines."
-        if (row == 0):
-            BOARD[row, col] = col
-            BOARD[row, 0] = ' '     # replace coordinate in (0,0) with a blank space
-
-        elif (col == 0):
-            BOARD[row, col] = row
-
-        # Set board's X's and O's.
-        elif ((row + col) % 2 == 0):
-            BOARD[(row, col)] = 'X'
-
-        else:
-            BOARD[(row, col)] = 'O'
 
 
 "Print the board."
@@ -73,23 +53,60 @@ def print_board(BOARD):
     for row in range(board_size + 1):
         for col in range(board_size + 1):
             print (BOARD[(row, col)]),        # print on one line
-        print                                    # start a new row
+        print
+
+
+"Initialize the game board, using a multidimensional list/array."
+def initialize_game():
+    "Have every space on the board switch off with Xs and Os."
+    "Also needs to include the board's coordinate lines."
+    for row in range(board_size + 1):
+        for col in range(board_size + 1):
+            # Set board's horizontal and vertical coordinate lines."
+            if (row == 0):
+                BOARD[row, col] = col
+                BOARD[row, 0] = ' '     # replace coordinate in (0,0) with a blank space
+            elif (col == 0):
+                BOARD[row, col] = row
+
+            # Set board's X's and O's.
+            elif ((row + col) % 2 == 0):
+                BOARD[(row, col)] = 'X'
+            else:
+                BOARD[(row, col)] = 'O'
+
+    print_board(BOARD)
+    return BOARD
+
+
+"Choose who has the first move."
+def first_move():
+    first_move = random.randint(0, 1)
+    if (first_move == 0):
+        print "User goes first."
+    else:
+        print "Computer goes first."
+    return first_move
+
+def play(BOARD):
+    
+    "If it's the user's move:"
+    if first_move
 
 
 
 
-
-print_board(BOARD)
 
 
 
 """
 Play the game!
 """
+"Initialize the game."
+initialize_game()
 
-def play():
-    "Initialize the game."
+"Choose who has the first move."
+first_move()
 
-    "Choose who has the first move."
-
-    "Play the game."
+"Play the game."
+play()
