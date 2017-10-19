@@ -37,46 +37,45 @@ class Node:
 
 
 
-"""
-Creates the 8x8 board display, using X for dark pieces and O for light pieces.
-"""
 
-"GLOBAL VARIABLES"
-board_size = 8      # set length of board
+"GLOBAL VARIABLES."
+board_size = 8         # set length of board
 BOARD = {}
 
+user_turn = False      # keep track of whose turn it is
+
+user_won = False       # identify the winner
+computer_won = False
 
 
-"Print the board."
+"Helper function -- prints the board."
 def print_board(BOARD):
-
     for row in range(board_size + 1):
         for col in range(board_size + 1):
             print (BOARD[(row, col)]),        # print on one line
         print
 
 
-"Initialize the game board, using a multidimensional list/array."
-def initialize_game():
-    "Have every space on the board switch off with Xs and Os."
-    "Also needs to include the board's coordinate lines."
-    for row in range(board_size + 1):
-        for col in range(board_size + 1):
-            # Set board's horizontal and vertical coordinate lines."
-            if (row == 0):
-                BOARD[row, col] = col
-                BOARD[row, 0] = ' '     # replace coordinate in (0,0) with a blank space
-            elif (col == 0):
-                BOARD[row, col] = row
 
-            # Set board's X's and O's.
-            elif ((row + col) % 2 == 0):
-                BOARD[(row, col)] = 'X'
-            else:
-                BOARD[(row, col)] = 'O'
+"""
+Play the game!
+"""
 
-    print_board(BOARD)
-    return BOARD
+"Creates the 8x8 board display, using X for dark pieces and O for light pieces."
+for row in range(board_size + 1):
+    for col in range(board_size + 1):
+        # Set board's horizontal and vertical coordinate lines."
+        if (row == 0):
+            BOARD[row, col] = col
+            BOARD[row, 0] = ' '     # replace coordinate in (0,0) with a blank space
+        elif (col == 0):
+            BOARD[row, col] = row
+
+        # Set board's alternating X's and O's.
+        elif ((row + col) % 2 == 0):
+            BOARD[(row, col)] = 'X'
+        else:
+            BOARD[(row, col)] = 'O'
 
 
 "Choose who has the first move."
@@ -84,29 +83,28 @@ def first_move():
     first_move = random.randint(0, 1)
     if (first_move == 0):
         print "User goes first."
+        return True
     else:
         print "Computer goes first."
-    return first_move
-
-def play(BOARD):
-    
-    "If it's the user's move:"
-    if first_move
+        return False
 
 
+"Start the game with whoever has the first move."
+user_turn = first_move()
 
+"While the game is not over..."
+while (winner == None):
+    "If it's the user's move..."
+    if (user_turn == True):
+        "Get the move from the user."
+        get_move()
+        play(BOARD, get_move)
+        user_turn = False
+    else:
+        "It is the computer's move."
+        get_move()
+        user_turn = True
 
-
-
-
-"""
-Play the game!
-"""
-"Initialize the game."
-initialize_game()
-
-"Choose who has the first move."
-first_move()
-
-"Play the game."
-play()
+    "Create new node."
+    new_Node = Node(BOARD, -, me, 1, -infinity)
+    bv, move = minimax(new_Node)
