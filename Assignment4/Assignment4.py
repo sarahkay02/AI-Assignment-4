@@ -4,7 +4,6 @@
 # Implements a program to play the game of Konane (Hawaiian Checkers).
 # ---------------------------------------------------------------------------
 
-import sys
 import random
 
 """
@@ -221,6 +220,23 @@ def user_first():
 "Generate the best move possible out of all legal moves, using minimax algorithm and alphabeta pruning."
 def get_move(self, BOARD):
     move = []
+
+    "Can this piece move North?"
+        # if there an opponent's piece directly adjacent
+
+        # and if there is an empty space to jump to
+
+    "Can this piece move East?"
+
+    "Can this piece move South?"
+
+    "Can this piece move West?"
+
+
+
+    """
+    Moves only have two coordinates (just from, and to). have to figure out whether this move is legal or not. Uses the move_generator function -- is the move in there? If not, then it's not legal.
+    """
 
     # case where it's the first move (Computer's turn)
     if (count_removed == 0):
