@@ -247,24 +247,24 @@ def make_move(move, BOARD):
 
 
 """
-PLAY THE GAME
+TO PLAY THE GAME
 """
 
-def playGame():
+def play_game(num_rows, num_cols):
     "Initialize the board game."
-    create_board(8, 8)
+    BOARD = create_board(num_rows, num_cols)
 
     "Figure out who has the first move -- if user goes first, get user input and make move on the board."
     if (who_first == 'User'):
         move = user_first()
-        make_move(move, board)
+        make_move(move, BOARD)
 
     "While the game is not over..."
     while (winner == None):
         "If it's the user's turn..."
         if (user_turn == True):
             "Get the move from the user."
-            move = get_move(self, board)
+            move = get_move(self, BOARD)
 
             "Check if there's a winner (if no moves generated, opponent wins)."
             if (move == []):
@@ -272,13 +272,13 @@ def playGame():
                 break
 
             "Make move on the board."
-            make_move(move, board)
+            make_move(move, BOARD)
             user_turn == False
 
         "If it's the computer's turn..."
         else:
             "Get the move from the computer."
-            move = get_move(self, board)
+            move = get_move(self, BOARD)
 
             "Check if there's a winner (if no moves generated, opponent wins)."
             if (move == []):
@@ -286,10 +286,15 @@ def playGame():
                 break
 
             "Make move on the board."
-            make_move(move, board)
+            make_move(move, BOARD)
             user_turn = True
 
     "Congratulate the winner and end the game."
     print winner + "won! Game over."
 
 
+    
+"""
+Start the game, specifying the size of the board (8x8)
+"""
+play_game(8, 8)
