@@ -48,6 +48,8 @@ count_removed = 0
 
 
 "Creates the 8x8 board display, using X for dark pieces and O for light pieces."
+global_num_rows = 0
+global_num_cols = 0
 def create_board(num_rows, num_cols):
     BOARD = [[blank]*(num_cols + 1) for row in range(num_rows + 1)]
 
@@ -67,6 +69,8 @@ def create_board(num_rows, num_cols):
 
             else:
                 BOARD[row][col] = 'O'
+    global_num_cols = num_cols
+    global_num_rows = num_rows
 
     return BOARD
 
@@ -151,6 +155,9 @@ FOR MOVES AND BASIC GAME PLAYING FUNCTIONALITY
 user_turn = False      # keep track of whose turn it is
 winner = None       # identify the winner
 
+"check location given row + col"
+def check_board(row, col):
+    return row >= 0 and col >= 0 and row < global_num_rows and col < global_num_cols
 
 "Makes sure move is legal."
 def is_legal(coords):
@@ -205,8 +212,13 @@ def get_move(self, board):
     return move
 
 
+
 def make_move(move, board):
     return 
+
+"distance btwn 2 points in vertical/horiz line on board"
+def distance(row1, col1, row2, col2):
+    return as(row1 - row2 + col1 - col2)
 
 
 
