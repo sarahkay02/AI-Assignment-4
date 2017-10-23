@@ -46,10 +46,11 @@ FOR BOARD GAME FUNCTIONALITY
 blank = ' '
 count_removed = 0
 
-
-"Creates the 8x8 board display, using X for dark pieces and O for light pieces."
 global_num_rows = 0
 global_num_cols = 0
+
+
+"Creates the 8x8 board display, using X for dark pieces and O for light pieces."
 def create_board(num_rows, num_cols):
     BOARD = [[blank]*(num_cols + 1) for row in range(num_rows + 1)]
 
@@ -69,11 +70,20 @@ def create_board(num_rows, num_cols):
 
             else:
                 BOARD[row][col] = 'O'
+                
     global_num_cols = num_cols
     global_num_rows = num_rows
 
     return BOARD
 
+
+"Prints the board."
+def print_board(BOARD):
+    for row in range(num_rows + 1):
+        for col in range(num_cols + 1):
+            print (BOARD[row][col]),        # print on one line
+            print
+            
 
 "Choose who has the first move."
 def who_first():
@@ -84,14 +94,6 @@ def who_first():
     else:
         print "Computer goes first (User is Light)."
         return 'Computer'
-
-
-"Prints the board."
-def print_board(BOARD):
-    for row in range(num_rows + 1):
-        for col in range(num_cols + 1):
-            print (BOARD[row][col]),        # print on one line
-            print
 
 
 "Generates possible First Moves."
@@ -129,6 +131,8 @@ def second_moves(first_move, BOARD):
 
 "Identifies the piece(s) to remove."
 def to_remove(coords):
+
+    # add code here
     return False
 
 
@@ -145,6 +149,11 @@ def remove_piece(coord, BOARD):
     return BOARD
 
 
+"Calculates distance between 2 points in vertical/horizontal line on board."
+def distance(row1, col1, row2, col2):
+    return as(row1 - row2 + col1 - col2)
+
+
 
 
 """
@@ -155,9 +164,11 @@ FOR MOVES AND BASIC GAME PLAYING FUNCTIONALITY
 user_turn = False      # keep track of whose turn it is
 winner = None       # identify the winner
 
-"check location given row + col"
+
+"Check location given row + col."
 def check_board(row, col):
     return row >= 0 and col >= 0 and row < global_num_rows and col < global_num_cols
+
 
 "Makes sure move is legal."
 def is_legal(coords):
@@ -207,18 +218,30 @@ def user_first():
     print_board(BOARD)
 
 
-def get_move(self, board):
-    move = None
-    return move
+"Generate the best move possible out of all legal moves, using minimax algorithm and alphabeta pruning."
+def get_move(self, BOARD):
+    move = []
+
+    # case where it's the first move (Computer's turn)
+    if (count_removed == 0):
+        return move
 
 
+    # case where it's the second move (Computer responding to User's first move)
+    elif (count_removed == 1):
+        return move
 
-def make_move(move, board):
-    return 
+    # cases where the first two moves have already been played
+    else:
+        return move
 
-"distance btwn 2 points in vertical/horiz line on board"
-def distance(row1, col1, row2, col2):
-    return as(row1 - row2 + col1 - col2)
+
+def make_move(move, BOARD):
+    "Remove the piece(s) from the board."
+    for coordinate in move:
+        remove_piece(coordinate)
+
+    return BOARD
 
 
 
@@ -244,7 +267,7 @@ def playGame():
             move = get_move(self, board)
 
             "Check if there's a winner (if no moves generated, opponent wins)."
-            if (move == None):
+            if (move == []):
                 winner = 'Computer'
                 break
 
@@ -258,7 +281,7 @@ def playGame():
             move = get_move(self, board)
 
             "Check if there's a winner (if no moves generated, opponent wins)."
-            if (move == None):
+            if (move == []):
                 winner = 'User'
                 break
 
@@ -268,4 +291,5 @@ def playGame():
 
     "Congratulate the winner and end the game."
     print winner + "won! Game over."
+
 
