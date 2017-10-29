@@ -7,10 +7,12 @@ import random
 from sets import Set
 from copy import copy, deepcopy
 import traceback
+import sys
 
 """
 CREATES THE NODE CLASS (to be used to represent various game states)
 """
+sys.setrecursionlimit(1500)
 class MoveNode:
     def __init__(self,board,parent, player):
         self.board = board
@@ -19,7 +21,7 @@ class MoveNode:
         self.player = player 
 
 
-class Node():
+class Node:
     def __init__(self, player, parent, board, depth, max_bool):
         self.score = 0
         self.player = player
@@ -31,33 +33,35 @@ class Node():
         self.max_bool = max_bool #true if max
 
 
+
+
 class BOARD:
     def __init__(self, width, num_removed = 0):
         self.width = width
         self.board = [[' ']*(self.width + 1) for row in range(self.width + 1)]
         self.num_removed = num_removed
 
-    def set_moves(self, board, player):
+    def set_moves(self, player):
         result = Set()
         for i in range(self.width):
             for j in range(self.width):
-                if board[i][j] == player:
-                    result.update(self.one_move(board,(i,j), player,[(i,j)]))
+                if self.board[i][j] == player:
+                    result.update(self.one_move(i,j, player,[(i,j)]))
         return result #this is a moveNode sets
 
-    def one_move(self, board,(i,j),player,moves):
+    def one_move(self, i,j, player, moves):
         move_nodes = Set()
         if player == 'X':
             other = 'O'
         if player == 'O':
             other = 'X'
-        parent = MoveNode(board, None, player)
+        parent = MoveNode(self.board, None, player) 
         parent.moves = moves[:]
         if self.generate_moves(player) == []:  
             return move_nodes
         else:
             for move in self.generate_moves(player):             
-                move_node = MoveNode(self.next_state(board,(i,j),move,player), parent, other)
+                move_node = MoveNode(self.next_state(i,j, move[0], move[1], player), parent, other) #look ahead
                 move_node.moves_list = parent.moves_list[:]
                 move_node.moves_list.append(move)
                 move_nodes.add(move_node)
@@ -65,7 +69,7 @@ class BOARD:
             return move_nodes
 
     def get_children(self, node): #Get children for one board and also fill all the possible actions for this node
-        result = self.set_moves(node.board, node.player)
+        result = self.set_moves(node.player)
         if node.player == 'X':
             other_player = 'O'
         if node.player == 'O':
@@ -78,7 +82,7 @@ class BOARD:
             node.children.append(child)
         return node.children
 
-    def check_valid(self,(x,y), (m,n), player):
+    def check_valid(self,x,y, m,n, player):
         t = (x,y)
         h = (m,n)
         m = h[0]
@@ -120,18 +124,18 @@ class BOARD:
         else:
             return False #invalid
 
-    def next_state(self, board, (x,y), (m,n), player):
-        board2 = deepcopy(board)
-        if Konane(self.size).isValid(board,(x,y),(m,n),player):
+    def next_state(self, x,y, m,n, player): # 2 coords
+        board2 = deepcopy(self.board)
+        if BOARD(self.width).check_valid(x,y, m,n, player):
             board2[x][y]= ' '
             board2[m][n]= player
-            board2[x+(m-x)/2][y+(n-y)/2]='.' 
+            board2[x+(m-x)/2][y+(n-y)/2]=' ' 
             return board2
 
     def eval_leaf(self, node): #evaluates leaf: num of avail max moves - num avail not max moves
         if node.player == 'X':
             other_node = Node('O', node.parent, node.currentBoard,node.depth, not node.max_bool)              
-        else:
+        else: #same player
             other_node = Node('X', node.parent, node.board, node.depth, not node.max_bool)
 
         if node.max_bool:
@@ -149,7 +153,7 @@ class BOARD:
             return score
 
     def minimax(self, node):
-        if node.depth==3: #is a leaf
+        if node.depth == 3: #is a leaf
             return (self.eval_leaf(node), node.moves)
 
         ns = self.get_children(node) #all children of node
@@ -159,7 +163,6 @@ class BOARD:
 
         if len(ns) == 1: # children = leaf
             return (self.eval_leaf(node), ns[0].moves)
-
 
         if node.max_bool:
             cbv = float("-inf")
@@ -171,9 +174,9 @@ class BOARD:
                 
                 if bv > cbv:
                     cbv = bv
-                    best_move = n.moves[:]
+                    best_move = n.moves[:] #entire list, replace
                     
-            return (cbv,best_move)
+            return (cbv, best_move)
         else:
             cbv = float("inf")
             best_move = []
@@ -184,8 +187,8 @@ class BOARD:
                 
                 if bv < cbv:
                     cbv = bv
-                    best_move = n.moves[:]
-            return (cbv,best_move)
+                    best_move = n.moves[:] #entire list, replace
+            return (cbv, best_move)
 
     """
     FOR BOARD FUNCTIONALITY
@@ -444,12 +447,12 @@ class BOARD:
             """
             CODE HERE
             """
-            y = Node('O',None,self.board,0,True)
-            #t = robot.minimaxAB(y,float("-inf"),float("inf"))
-            t = self.minimax(y)
-            moves = t[1]
-            print(t[1])
-            return t[1]
+            #minimax(board, evalFunc, computerOne, depthOne)
+            n = Node('O',None,self.board,0,True)
+            n2 = self.minimax(n)
+            moves = n2[1]
+            print(n2[1])
+            return n2[1]
 
 
     def make_move(self, move, X_or_O):
