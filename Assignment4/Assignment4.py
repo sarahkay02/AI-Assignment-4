@@ -64,7 +64,7 @@ class BOARD:
                 move_nodes.update(self.one_move(move_node.board, move_node.moves_list[len(move_node.moves_list)-1], player, move_node.moves_list))           
             return move_nodes
 
-    def get_children(self, node): #Get Children for one board and also fill all the possible actions for this node
+    def get_children(self, node): #Get children for one board and also fill all the possible actions for this node
         result = self.set_moves(node.board, node.player)
         if node.player == 'X':
             other_player = 'O'
@@ -154,16 +154,16 @@ class BOARD:
 
         ns = self.get_children(node) #all children of node
 
-        if len(ns)==0: # leaf
+        if len(ns) == 0: # leaf
             return (self.eval_leaf(node), node.moves)
 
-        if len(ns)==1: # children = leaf
+        if len(ns) == 1: # children = leaf
             return (self.eval_leaf(node), ns[0].moves)
 
 
         if node.max_bool:
             cbv = float("-inf")
-            bestmove = []
+            best_move = []
             for n in ns:
                 t = self.minimax(n)
                 bv = t[0]
@@ -171,13 +171,12 @@ class BOARD:
                 
                 if bv > cbv:
                     cbv = bv
-                    bestmove = n.moves[:]
+                    best_move = n.moves[:]
                     
-            """print "MAX: ", node, " cbv = ", cbv, " bestmove = ", bestmove """
-            return (cbv,bestmove)
+            return (cbv,best_move)
         else:
             cbv = float("inf")
-            bestmove = []
+            best_move = []
             for n in ns:
                 t = self.minimax(n)
                 bv = t[0]
@@ -185,9 +184,8 @@ class BOARD:
                 
                 if bv < cbv:
                     cbv = bv
-                    bestmove = n.moves[:]
-            """print "MIN: ", node, " cbv = ", cbv, " bestmove = ", bestmove """
-            return (cbv,bestmove)
+                    best_move = n.moves[:]
+            return (cbv,best_move)
 
     """
     FOR BOARD FUNCTIONALITY
