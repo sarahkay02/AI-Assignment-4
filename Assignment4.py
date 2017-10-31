@@ -19,9 +19,9 @@ class Node:
         self.cutoffs = 0
     
 class Player:
-    def __init__(self, n, player):
+    def __init__(self, n, player1):
         self.size = n
-        self.player = player
+        self.player1 = player1
 
     def gen_every_move(self, board, player):
         result = Set()
@@ -47,6 +47,35 @@ class Player:
             node.children.append(child)
         return node.children
 
+    def gen_successor_nodes(self, board, X_or_O, parent_node, depth_limit):
+        successor_nodes = []
+
+        # generate all possible moves for the opponent
+        possible_successor_moves = self.generate_moves(board, X_or_O)
+
+        for move in possible_successor_moves:
+            print "successor moves: ", move
+        print '\n\n\n\n'
+
+        # for each possible move...
+        for move in possible_successor_moves:
+            # create new board state
+            current_state = deepcopy(self)
+            current_state.make_move(move, X_or_O, False)
+
+            # create new node
+            child_node = Node(current_state.board, move, X_or_O, parent_node, parent_node.level+1, None)
+
+            successor_nodes.append(child_node)
+
+            # if at max level, do static evaluation and create corresponding node
+            if (parent_node.level == depth_limit-1):
+                child_node1 = Node(current_state.board, move, X_or_O, parent_node, parent_node.level+1, current_state.static_eval(child_node, depth_limit))
+
+                successor_nodes.append(child_node1)
+
+        return successor_nodes
+
     def gen_one_move(self, board,(i,j), player, actions):
         move_node_set = Set()
         if player == 'X':
@@ -70,19 +99,19 @@ class Player:
 
     def valid_moves(self, board, (x,y), player):
         moves=[]
-        if BOARD(self.size).isValid(board, (x,y), (x-2,y), player):
+        if BOARD(self.size).valid(board, (x,y), (x-2,y), player):
             moves.append((x-2, y))
-        if BOARD(self.size).isValid(board, (x,y), (x+2,y), player):
+        if BOARD(self.size).valid(board, (x,y), (x+2,y), player):
             moves.append((x+2, y))
-        if BOARD(self.size).isValid(board, (x,y), (x,y-2), player):
+        if BOARD(self.size).valid(board, (x,y), (x,y-2), player):
             moves.append((x, y-2))
-        if BOARD(self.size).isValid(board, (x,y), (x,y+2), player):
+        if BOARD(self.size).valid(board, (x,y), (x,y+2), player):
             moves.append((x, y+2))
         return moves
 
     def next_state(self, board, (x,y), (m,n), player):
         board_copy = deepcopy(board)
-        if BOARD(self.size).isValid(board, (x,y), (m,n), player):
+        if BOARD(self.size).valid(board, (x,y), (m,n), player):
             board_copy[x][y]= ' '
             board_copy[m][n]= player
             board_copy[x+(m-x)/2][y+(n-y)/2]=' ' 
@@ -113,7 +142,7 @@ class Player:
         if node.depth == 4: # leaf
             return (self.eval_func(node), node.action)
 
-        if BOARD(self.size).isLost(node.board, node.player):# this is a leafNode
+        if BOARD(self.size).lost(node.board, node.player):# this is a leafNode
             return (self.eval_func(node), node.action)
 
         ns = self.get_node_children(node)# children of node
@@ -154,7 +183,7 @@ class Player:
     def minimax_alpha_beta(self, node, A, B):
         if node.depth == 4: #leaf
             return (self.eval_func(node), node.action)
-        if BOARD(self.size).isLost(node.board, node.player):# leaf
+        if BOARD(self.size).lost(node.board, node.player):# leaf
             return (self.eval_func(node), node.action)
         ns = self.get_node_children(node)# children of node
 
@@ -390,17 +419,9 @@ class BOARD:
         first_moves.append((self.width, self.width))            # bottom right corner
         return first_moves
 
-        # if (x, y) in first_moves:
-        #     board[x][y] = ' '
-        #     return True
-        # else: 
-        #     print "invalid move, please choose another piece"
-        #     return False
-
     "Generates all possible second moves."
     def possible_second_moves(self, first_move):
         second_moves = []
-
         if (self.board[1][1] == ' '):
             second_moves.append((1, 2))
             second_moves.append((2, 1))
@@ -416,12 +437,6 @@ class BOARD:
             second_moves.append((first_move[0], first_move[1]-1))
             
         return second_moves
-        # if (x,y) in second_moves:
-        #     board[x][y]=" "
-        #     return True 
-        # else:
-        #     print "Invalid move, choose another piece."
-        #     return False    
     
     def validInt(self,n):
         try:
@@ -498,7 +513,7 @@ class BOARD:
 
 
     
-    def isValid(self, board, (x,y), (m,n), player):
+    def valid(self, board, (x,y), (m,n), player):
         t=(x,y)
         h=(m,n)
         m=h[0]
@@ -632,9 +647,11 @@ class BOARD:
         else:
             "RandomPlayer: chooses a random move out of possible legal moves."
             #best_move = random.choice(possible_moves)      # in the form (x,y) or (x, y, x2, y2)
-            player=Player(self.width,'')
+            player = Player(self.width, '')
             # use minimax to identify the best possible move
-            y = Node(player.player, None, self.board,0,True)
+            #self, player, parent, board, depth, max_bool
+            y = Node('O', None, self.board, 6, False)
+            print "y node ", y.player, y.parent, y.board, y.depth, y.max_bool
             #t = player.minimax_alpha_beta(y,float("-inf"),float("inf"))
             t = player.minimax(y)
             moves = t[0]
@@ -647,20 +664,12 @@ class BOARD:
 
             return best_move
 
-    # def make_move(self,board, (x,y), (m,n), player):
-    #     if self.isValid(board,(x,y), (m,n), player):
-    #         board[x][y] = ' '
-    #         board[m][n] = player
-    #         board[x+(m-x)/2][y+(n-y)/2]=' '         
-    #         self.boardToString(board)
-    #         return board
-
-    def isLost(self, board, player):
+    def lost(self, board, player):
         if player == 'X':
             for i in range(self.width):
                 for j in range(self.width):
                     if board[i][j]=='X':
-                        if self.isValid(board,(i,j),(i-2,j),'X') or self.isValid(board,(i,j),(i+2,j),'X') or self.isValid(board,(i,j),(i,j-2),'X') or self.isValid(board,(i,j),(i,j+2),'X'): 
+                        if self.valid(board,(i,j),(i-2,j),'X') or self.valid(board,(i,j),(i+2,j),'X') or self.valid(board,(i,j),(i,j-2),'X') or self.valid(board,(i,j),(i,j+2),'X'): 
                             return False
             print player," lost"        
             return True
@@ -669,7 +678,7 @@ class BOARD:
             for i in range(self.width):
                 for j in range(self.width):
                     if board[i][j]=='O':
-                        if self.isValid(board,(i,j),(i-2,j),'O') or self.isValid(board,(i,j),(i+2,j),'O') or self.isValid(board,(i,j),(i,j-2),'O') or self.isValid(board,(i,j),(i,j+2),'O'): 
+                        if self.valid(board,(i,j),(i-2,j),'O') or self.valid(board,(i,j),(i+2,j),'O') or self.valid(board,(i,j),(i,j-2),'O') or self.valid(board,(i,j),(i,j+2),'O'): 
                             return False
             print player, " lost"    
             return True
@@ -688,30 +697,6 @@ class MoveNode:
     """
 
     "Generates all successor nodes for a current board game state."
-    def gen_successor_nodes(self, board, X_or_O, parent_node, depth_limit):
-        successor_nodes = []
-
-        # generate all possible moves for the opponent
-        possible_successor_moves = self.gen_moves(board, X_or_O)
-
-        # for each possible move...
-        for move in possible_successor_moves:
-            # create new board state
-            current_state = deepcopy(self)
-            current_state.make_move(move, X_or_O)
-
-            # create new node
-            child_node = Node(current_state.board, move, X_or_O, parent_node, parent_node.level+1, None)
-
-            successor_nodes.append(child_node)
-
-            # if at max level, do static evaluation and create corresponding node
-            if (parent_node.level == depth_limit-1):
-                child_node1 = Node(current_state.board, move, X_or_O, parent_node, parent_node.level+1, current_state.static_eval(child_node, depth_limit))
-
-                successor_nodes.append(child_node1)
-
-        return successor_nodes
 
 
     "Static evaluation function for possible moves."
@@ -802,6 +787,7 @@ PLAY THE GAME
 def play_game(width):
     "Initialize the board game."
     board = BOARD(width)
+    print "width ", board.width
     board.create_board()
 
     winner = None                # identifies the winner
