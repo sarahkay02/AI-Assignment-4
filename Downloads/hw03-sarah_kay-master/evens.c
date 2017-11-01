@@ -1,5 +1,0 @@
-/* evens.c
- *
- * Name:
- * Desc:
- */
