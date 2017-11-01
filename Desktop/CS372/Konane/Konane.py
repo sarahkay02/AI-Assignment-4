@@ -7,21 +7,33 @@
 import random
 from copy import deepcopy
 
-from Node import *
+
+"""
+CREATES THE NODE CLASS (to be used to represent various game states)
+"""
+
+class Node:
+    def __init__(self, board, move, level, depth_limit, player, who_first):
+        "Instance variables."
+        self.board = board                   # current board/game state
+        self.move = move                     # move that brought you to this state
+        self.level = level                   # node at level L in the search tree
+        self.depth_limit = depth_limit       # depth limit for searching
+        self.player = player                 # which player goes next
+        self.who_first = who_first           # who goes first in the game
 
 
 
 
+
+"""
+BOARD CLASS and FOR BOARD/GAME FUNCTIONALITY
+"""
 class BOARD:
     def __init__(self, width):
         self.width = width
         self.board = [[' ']*(self.width + 1) for row in range(self.width + 1)]
 
-
-
-    """
-    FOR BOARD FUNCTIONALITY
-    """
 
     "Creates the 8x8 board display, using X for dark pieces and O for light pieces."
     def create_board(self, width):
@@ -30,7 +42,7 @@ class BOARD:
                 # Set board's horizontal and vertical coordinate lines."
                 if (row == 0):
                     self.board[row][col] = col
-                    self.board[row][0] = ' '     # replace coordinate in (0,0) with a ' ' space
+                    self.board[row][0] = ' '     # replace coordinate in (0,0) with a blank space
 
                 elif (col == 0):
                     self.board[row][col] = row
@@ -76,16 +88,19 @@ class BOARD:
     def possible_second_moves(self, first_move):
         second_moves = []
 
+        # if first move removed top left piece
         if (self.board[1][1] == ' '):
             second_moves.append((1, 2))
             second_moves.append((2, 1))
             return second_moves
 
+        # if first move removed bottom right piece
         elif (self.board[self.width][self.width] == ' '):
             second_moves.append((self.width-1, self.width))
             second_moves.append((self.width, self.width-1))
             return second_moves
 
+        # if first move removed one of the middle pieces
         else:
             second_moves.append((first_move[0]+1, first_move[1]))
             second_moves.append((first_move[0]-1, first_move[1]))
@@ -94,7 +109,7 @@ class BOARD:
             return second_moves
 
 
-    "Generates all possible moves."
+    "Generates all possible moves, INCLUDING multiple jumps."
     def generate_moves(self, board, X_or_O):
         possible_moves = []
         jump_to = (0, 0)
@@ -119,7 +134,7 @@ class BOARD:
                             # if so, then append this move
                             possible_moves.append((row, col, jump_to[0], jump_to[1]))
 
-                            # update how far you'll jump next time
+                            # update how far you'll jump next time (for multiple jumps)
                             current_pos = jump_to
                         else:
                             break
@@ -139,7 +154,7 @@ class BOARD:
                             # if so, then append this move
                             possible_moves.append((row, col, jump_to[0], jump_to[1]))
 
-                            # update how far you'll jump next time
+                            # update how far you'll jump next time (for multiple jumps)
                             current_pos = jump_to
                         else:
                             break
@@ -159,7 +174,7 @@ class BOARD:
                             # if so, then append this move
                             possible_moves.append((row, col, jump_to[0], jump_to[1]))
 
-                            # update how far you'll jump next time
+                            # update how far you'll jump next time (for multiple jumps)
                             current_pos = jump_to
                         else:
                             break
@@ -179,7 +194,7 @@ class BOARD:
                             # if so, then append this move
                             possible_moves.append((row, col, jump_to[0], jump_to[1]))
 
-                            # update how far you'll jump next time
+                            # update how far you'll jump next time (for multiple jumps)
                             current_pos = jump_to
                         else:
                             break
@@ -276,16 +291,16 @@ class BOARD:
         # if it's the computer's move...
         else:
             "RandomPlayer: chooses a random move out of possible legal moves."
-            #best_move = random.choice(possible_moves)      # in the form (x,y) or (x, y, x2, y2)
+            #best_move = random.choice(possible_moves)
 
             "SmartPlayer: chooses the best move using minimax and alphabeta pruning."
-            # use minimax to identify the best possible move
             if who_first == 'User':
-                first_node = Node(self.board, None, 0, 3, 'O', who_first)          # 2 is the depth limit
+                first_node = Node(self.board, None, 0, 4, 'O', who_first)          # 4 is the depth limit
             else:
-                first_node = Node(self.board, None, 0, 3, 'X', who_first)
+                first_node = Node(self.board, None, 0, 4, 'X', who_first)
 
-            bv_move = self.minimax(first_node)
+            #bv_move = self.minimax_alpha_beta(first_node, float('-inf'), float('inf'))
+            bv_move = self.minimax_alpha_beta_multijump(first_node, float('-inf'), float('inf'))
             best_move = bv_move[1]
 
             return best_move
@@ -293,10 +308,7 @@ class BOARD:
 
     "Plays the move on the game board."
     def make_move(self, move, X_or_O, to_print):
-        if (len(move) == 0):
-            print "No move!"
-            return 0
-
+        # only print if moves are actually being made on game board (not for creating game boards for successor moves)
         if (to_print):
             if (X_or_O == 'X'):
                 print "Dark moves (" + str(move[0]) + ", " + str(move[1]) + ") to (" + str(move[2]) + ", " + str(move[3]) + ")"
@@ -364,6 +376,7 @@ class BOARD:
             return self.board
 
 
+
     """
     MINIMAX AND STATIC EVALUATIONS
     """
@@ -375,47 +388,31 @@ class BOARD:
         # generate all possible moves for the opponent
         possible_successor_moves = self.generate_moves(board, current_node.player)
 
-        print "possible moves: "
-        for move in possible_successor_moves:
-            print move
-
         # for each possible move...
         for move in possible_successor_moves:
-            # create new board state
+            # create a copy of the current game board
             current_state = deepcopy(self)
+
+            # make the move on the copy of the board
             current_state.make_move(move, current_node.player, False)
 
-            # create new node
+            # create new node containing this new board, depending on who is the next player
             if current_node.player == 'X':
-            #print "current_node.level ", current_node.level
                 successor_node = Node(current_state.board, move, current_node.level+1, current_node.depth_limit, 'O', current_node.who_first)
                 successor_nodes.append(successor_node)
+
             else:
                 successor_node = Node(current_state.board, move, current_node.level+1, current_node.depth_limit, 'X', current_node.who_first)
                 successor_nodes.append(successor_node)
 
-
-
-        # for successor_node in successor_nodes:
-        #     print "current board's level ", current_node.level
-        #     self.print_board(current_node.board)
-        #     print
-        #
-        #     print "previous move: ", successor_node.move
-        #     print "successor board and level: ", successor_node.level
-        #     self.print_board(successor_node.board)
-
         return successor_nodes
 
 
-    "Static evaluation function for possible moves."
+    "Static evaluation function for possible moves (#our_moves - #opponent's_moves)."
     def static_eval(self, node):
         score = 0
 
-        # calculate number of our child nodes
-        #self.print_board(node.board)
-
-        #successor_nodes = self.generate_successor_nodes(node.board, computer_piece, node, depth_limit)
+        # figure out which piece corresponds to which player
         if node.who_first == 'User':
             user_piece = 'X'
             computer_piece = 'O'
@@ -423,139 +420,155 @@ class BOARD:
             user_piece = 'O'
             computer_piece = 'X'
 
+        # count the number of moves the computer can make
         successor_moves = self.generate_moves(node.board, computer_piece)
-
-        # num_nodes = len(successor_nodes)
         num_moves = len(successor_moves)
 
-        # calculate number of opponent's child nodes
-        # opponent_successor_nodes = self.generate_successor_nodes(node.board, user_piece, node, depth_limit)
+        # count the number of moves the user can make
         opp_successor_moves = self.generate_moves(node.board, user_piece)
-        #num_opponent_nodes = len(opponent_successor_nodes)
         num_opponent_moves = len(opp_successor_moves)
 
-        # calculate score (our children - opponent's children)
+        # calculate score (computer's possible moves - user's possible moves)
         score = num_moves - num_opponent_moves
-
         return score
 
 
     "Minimax -- returns the best move as defined by the static evaluation function."
     def minimax(self, node):
-        # if n is at depth limit
+        # if node is at depth limit...
         if (node.level == node.depth_limit):
             # do a static evaluation, return result and the best move
-            # print "level, node.move ", node.level, ' ', node.move
-            # print "static ", (self.static_eval(node, user_piece, computer_piece, depth_limit), node.move)
             return (self.static_eval(node), node.move)
 
-
+        # generate successor nodes
         successor_nodes = self.generate_successor_nodes(node.board, node)
 
-        # if n is a max node (if level is 0)
-        if (node.level %2 == 0):
+        # if node is at a maximizing level (if level is even)
+        if (node.level % 2 == 0):
             best_move = ()
-        #    print "What level are we? should be even + max level ", node.level
             cbv = float("-inf")
-            print "even"
 
-
+            # for each successor node, call minimax recursively
             for successor in successor_nodes:
                 bv_move = self.minimax(successor)
 
+                # look for the highest bv
                 if bv_move[0] > cbv:
                     cbv = bv_move[0]
-                    best_move = successor.move #[1]
-                    #need to return move that got us to this move, not that move
+                    best_move = successor.move
 
-            print "Best move at a maximizing level: ", best_move
-            # do a static evaluation and return the backup value
             return (cbv, best_move)
 
-        else: #if n is min node
+        # if node is at a minimizing level (if level is odd)
+        else:
             best_move = ()
-            # print "What level are we? should be odd and min level", node.level
             cbv = float("inf")
-            print "odd"
 
-            # generate successor nodes
-
-            #print "previous move: ", node.move
-
-            # print '\n'
-            # for successor in successor_nodes:
-            #     print "successor moves: ", successor.move
-
-            #self.print_board(node.board)
-
-
+            # for each successor node, call minimax recursively
             for successor in successor_nodes:
-                # bv_move[0] is the static eval, bv_move[1] is the best move
                 bv_move = self.minimax(successor)
-                # print "min level "
-                # print "backup value and move: ", bv_move[0], bv_move[1]
-                # print "successor node level\n ", successor.level
-                # # print '\n'
+
+                # look for the lowest bv
                 if bv_move[0] < cbv:
                     cbv = bv_move[0]
-                    # print "best move: ", bv_move[1]
-                    #best_move = bv_move[1]
                     best_move = successor.move
-                    #need to return move that got us to this move, not that move
 
-            print "Best move at a minimizing level: ", best_move
             return (cbv, best_move)
 
+
+    "Minimax with alpha-beta pruning."
     def minimax_alpha_beta(self, node, A, B):
+        # if node is at depth limit
         if (node.level == node.depth_limit):
+            # do a static evaluation, return result and the best move
             return (self.static_eval(node), node.move)
-        # ns = self.get_node_children(node) # children of node
+
+        # generate successor nodes
         successor_nodes = self.generate_successor_nodes(node.board, node)
-        if len(ns) == 0: # leaf
-            return (self.static_eval(node, depth_limit), node.move)
 
-        if len(ns) == 1:# leaf = children
-            return (self.static_eval(node), ns[0].move)
-
-        if node.level%2 == 0:
-            global cutoffs
-            cbv = float("-inf")
+        # if node is at a maximizing level (if level is even)
+        if (node.level % 2 == 0):
             best_move = ()
-            successor_nodes = self.generate_successor_nodes(node.board, 'O', node, depth_limit)
-            for node in successor_nodes:
-                mini = self.minimax_alpha_beta(node, depth_limit, A, B)
-                bv = mini[0]
-                move  = mini[1]
 
-                if bv > A:
-                    A = bv
-                    best_move = node.player
+            # for each successor node, call minimax recursively
+            for successor in successor_nodes:
+                bv_move = self.minimax_alpha_beta(successor, A, B)
 
+                if bv_move[0] > A:
+                    A = bv_move[0]
+                    best_move = successor.move
                 if A >= B:
-                    n = node
-                    while(n.parent != None):
-                        n = n.parent
-                    cutoffs+=1
                     return (B, best_move)
-            return (A, best_move)
-        else:
-            global cutoffs
-            cbv = float("inf")
-            best_move = []
-            for n in ns:
-                mini = self.minimax_alpha_beta(n, depth_limit, A, B)
-                bv = mini[0]
-                move = mini[1]
 
-                if bv < B:
-                    B = bv
-                    best_move = node.player #node.move
-                if A >= B:
-                    n = node
-                    while(n.parent != None):
-                        n = n.parent
-                    cutoffs += 1
+            return (A, best_move)
+
+        # if node is at a minimizing level (if level is odd)
+        else:
+            best_move = ()
+
+            # for each successor node, call minimax recursively
+            for successor in successor_nodes:
+                bv_move = self.minimax_alpha_beta(successor, A, B)
+                if bv_move[0] < B:
+                    B = bv_move[0]
+                if B <= A:
                     return (A, best_move)
+
+            return (B, best_move)
+
+
+    "Minimax with alpha-beta pruning, modified to always choose a multijump as the best move."
+    def minimax_alpha_beta_multijump(self, node, A, B):
+        # if node is at depth limit
+        if (node.level == node.depth_limit):
+            # do a static evaluation, return result and the best move
+            return (self.static_eval(node), node.move)
+
+        # generate successor nodes
+        successor_nodes = self.generate_successor_nodes(node.board, node)
+
+        # if node is at a maximizing level (if level is even)
+        if (node.level % 2 == 0):
+            best_move = ()
+
+            # check for a multijump -- if there is one, immediately return this move as the best move
+            for successor in successor_nodes:
+                # if move is in the same column
+                if successor.move[0] == successor.move[2]:
+                    if (abs(successor.move[1]-successor.move[3])) > 2:
+                        best_move = successor.move
+                        return (float("inf"), best_move)
+
+                # if move in the same row
+                else:
+                    if (abs(successor.move[0]-successor.move[2])) > 2:
+                        best_move = successor.move
+                        return(float("inf"), best_move)
+
+            # for each successor node, call minimax recursively
+            for successor in successor_nodes:
+                bv_move = self.minimax_alpha_beta(successor, A, B)
+
+                if bv_move[0] > A:
+                    A = bv_move[0]
+                    best_move = successor.move
+                if A >= B:
+                    return (B, best_move)
+
+            return (A, best_move)
+
+        # if node is at a minimizing level (if level is odd)
+        else:
+            best_move = ()
+
+            # for each successor node, call minimax recursively
+            for successor in successor_nodes:
+                bv_move = self.minimax_alpha_beta(successor, A, B)
+                if bv_move[0] < B:
+                    B = bv_move[0]
+                if B <= A:
+                    return (A, best_move)
+
             return (B, best_move)
 
 
@@ -615,7 +628,6 @@ def play_game(width):
 
             # get the move from the user
             print "User's turn."
-            print "who_first ", who_first
             user_move = board.get_move(user_turn, possible_moves, who_first)
 
             # make move on the board
@@ -634,7 +646,6 @@ def play_game(width):
 
             # get the move from the computer
             print "Computer's turn."
-            print "who_first ", who_first
             computer_move = board.get_move(user_turn, possible_moves, who_first)
 
             # make move on the board

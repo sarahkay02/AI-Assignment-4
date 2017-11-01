@@ -14,3 +14,23 @@ class Node:
         self.depth_limit = depth_limit          # depth limit for searching
         self.player = player
         self.who_first = who_first
+
+
+
+
+
+
+
+
+def multijump():
+    for successor in successor_nodes:
+        if successor.move[0] == successor.move[2]:
+            if (abs(successor.move[1]-successor.move[3])) > 2:
+                best_move = successor.move
+                return (float("inf"), best_move)
+
+        # if move in the same row
+        else:
+            if (abs(successor.move[0]-successor.move[2])) > 2:
+                best_move = successor.move
+                return(float("inf"), best_move)
