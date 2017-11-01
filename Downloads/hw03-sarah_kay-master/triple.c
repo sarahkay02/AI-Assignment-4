@@ -1,5 +1,0 @@
-/* triple.c
- *
- * Name:
- * Desc:
- */
